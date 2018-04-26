@@ -2,7 +2,7 @@
 
 namespace Wkop;
 
-use Wkop\Signer;
+use GuzzleHttp\Psr7\Response;
 
 class Client
 {
@@ -123,8 +123,8 @@ class Client
                 [
                     'headers' => [
                         'apisign' => $signingKey,
-                        ],
-                    'body' => $postData
+                    ],
+                    'form_params' => $postData
                 ]
             );
 
@@ -133,13 +133,17 @@ class Client
             return false;
         }
 
-        if (! isset($response->json()['userkey'])) {
+        $json = $this->decodeJson($response);
+
+        if (! isset($json['userkey'])) {
             // Can't really tell what kind of error is this.
             $this->userKey = null;
+
             return false;
         }
 
-        $this->userKey = $response->json()['userkey'];
+        $this->userKey = $json['userkey'];
+
         return true;
     }
 
@@ -176,7 +180,7 @@ class Client
                 ]
             );
 
-        return $response->json();
+        return $this->decodeJson($response);
     }
 
     /**
@@ -204,11 +208,11 @@ class Client
                     'headers' => [
                         'apisign' => $signingKey
                     ],
-                    'body' => $postData
+                    'form_params' => $postData
                 ]
             );
 
-        return $response->json();
+        return $this->decodeJson($response);
     }
 
     /**
@@ -238,5 +242,14 @@ class Client
         $url = 'https://a.wykop.pl/' . $resource . '/' . implode('/', $params)
             . '/appkey,' . $this->appKey . ',userkey,' . $this->userKey . $this->implodeMethodParams($methodParams);
         return $url;
+    }
+
+    /**
+     * @param Response $response
+     * @return array
+     */
+    private function decodeJson(Response $response)
+    {
+        return json_decode($response->getBody(), true);
     }
 }
