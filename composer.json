@@ -1,5 +1,5 @@
 {
-    "name": "matiit/wkop",
+    "name": "dragu/wkop",
     "type": "library",
     "license": "BSD-3-Clause",
     "description": "Wykop API client",
